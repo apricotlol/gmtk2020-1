@@ -10,8 +10,11 @@ public class wheel_barrow : MonoBehaviour
     Player pl;
 
     public float distanceFromPlayer;
+    public float distanceFromGround;
+    public float playerFromGround ;
     
     Vector3 grabbedPos;
+    Vector3 playerPosOffset;
     float grabDistance;
     float seperation;
     bool canGrab;
@@ -36,11 +39,14 @@ public class wheel_barrow : MonoBehaviour
 
     void Start()
     {
-        //distanceFromPlayer = child.transform.position.z;
-        grabbedPos = new Vector3(0f, 0f, distanceFromPlayer);
-        grabDistance = 9;
+
+        grabDistance = 3;
+        distanceFromPlayer = 4;
+        playerPosOffset = new Vector3(0, playerFromGround, 0);
+        
         canGrab = false;
         isGrabbed = false;
+        grabbedPos = new Vector3(0, playerFromGround, 0);
         
         pl = player.GetComponent<Player>();
         
@@ -51,7 +57,9 @@ public class wheel_barrow : MonoBehaviour
        
       
 
-        seperation = Vector3.Distance(this.transform.position, player.transform.position);
+        seperation = Vector3.Distance(this.transform.position, (player.transform.position + playerPosOffset));
+        //Debug.Log(seperation);
+
         checkGrab();
         if (canGrab) {//allow an input by the player
             if (Input.GetKeyDown("e") && !isGrabbed)
@@ -69,16 +77,18 @@ public class wheel_barrow : MonoBehaviour
         if (isGrabbed) {
            
             transform.SetParent(player.transform);
-            this.transform.position =player.transform.position;
+            //this.transform.position =(player.transform.position + grabbedPos) ;
+            this.transform.position = (player.transform.position + grabbedPos);
             this.transform.rotation = player.transform.rotation;
             wobble();
-
+            
         }
 
     }
 
     private void checkGrab()
     {
+   
         if (seperation < grabDistance)
         {  
             canGrab = true;
@@ -106,11 +116,11 @@ public class wheel_barrow : MonoBehaviour
         wobbleAmountZ = wobbleAmountToAddZ * Mathf.Sin(pulse * time);
 
         //child.transform.SetParent(this.transform);
-        //child.transform.localPosition = new Vector3(this.transform.position.x + wobbleAmountX, this.transform.position.y, this.transform.position.z + wobbleAmountZ + distanceFromPlayer);
-        //child.transform.localPosition = grabbedPos;
-        child.transform.localPosition = new Vector3(wobbleAmountX, 0, wobbleAmountZ);
-        Debug.Log("x" + child.transform.localPosition.x + "y" + child.transform.localPosition.y + "z" + child.transform.localPosition.z);
-        //child.transform.rotation = this.transform.rotation;
+        child.transform.localPosition = new Vector3(0, wobbleAmountX, distanceFromPlayer);
+        child.transform.localRotation = Quaternion.Euler(0, 0, wobbleAmountZ*13);
+
+       
+        Debug.Log("wobbleZ " + wobbleAmountZ);
 
         // velocity
         velocity = (lastPos - player.transform.position) / Time.deltaTime;
@@ -132,7 +142,9 @@ public class wheel_barrow : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(this.transform.position, grabDistance);
-       
+        Gizmos.color = Color.black;
+        Gizmos.DrawWireSphere(this.transform.position, 1);
+        Gizmos.DrawWireSphere(player.transform.position + playerPosOffset, 1);
 
     }
     //player can grab
